@@ -4,20 +4,195 @@ let visitasTotales = 0;
 let filtroActual = 'all';
 let busquedaActual = '';
 
-// === API ===
+
+let modoVista = 'public';
+let empresaIdView = null;
+
+// Contraseña para admin
+const ADMIN_PASSWORD = "admin123";
+
+// Clave para almacenar la sesión en sessionStorage
+const SESSION_KEY = "vitrina_admin_authenticated";
+
+// === Función de Verificación ===
+function verificarYEstablecerModo() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const view = urlParams.get('v');
+    const empresa = urlParams.get('empresa');
+    
+    // Verificar
+    const isAuthenticated = sessionStorage.getItem(SESSION_KEY) === "true";
+    
+    // Intentar acceder a admin sin autenticación
+    if (view === 'admin' && !isAuthenticated) {
+        // Redirigir a la página principal sin el parámetro admin
+        window.location.href = window.location.origin + window.location.pathname + "?error=unauthorized";
+        return false;
+    }
+    
+    // Acceso admin autenticado
+    if (view === 'admin' && isAuthenticated) {
+        modoVista = 'admin';
+        empresaIdView = null;
+        return true;
+    }
+    
+    // Vista de empresa 
+    if (empresa) {
+        modoVista = 'empresa';
+        empresaIdView = parseInt(empresa);
+        return true;
+    }
+    
+    // Vista pública normal
+    modoVista = 'public';
+    empresaIdView = null;
+    return true;
+}
+
+// === Detectar Modo de Vista ===
+function detectarModoVista() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get('error');
+    
+    // Mostrar mensaje de error si se haceun intento de acceso no autorizado
+    if (error === 'unauthorized') {
+        alert("⚠️ Acceso no autorizado. Debes ingresar la contraseña correcta para acceder al panel de administración.");
+        // Limpiar la URL
+        const newUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+    }
+    
+    // Configurar la interfaz según el modo
+    if (modoVista === 'admin') {
+        document.getElementById('viewBadge').innerHTML = '👑 Modo Administrador';
+        document.getElementById('filtersSection').style.display = 'none';
+        mostrarBotonesAdmin();
+    } else if (modoVista === 'empresa') {
+        document.getElementById('viewBadge').innerHTML = '🔗 Vista de Emprendedor';
+        document.getElementById('filtersSection').style.display = 'none';
+        mostrarBotonesPublico();
+    } else {
+        document.getElementById('viewBadge').innerHTML = '🏠 Modo Público';
+        document.getElementById('filtersSection').style.display = 'block';
+        mostrarBotonesPublico();
+    }
+}
+
+function mostrarBotonesAdmin() {
+    const headerButtons = document.getElementById('headerButtons');
+    if (!headerButtons) return;
+    headerButtons.innerHTML = `
+        <button class="btn-public" onclick="cambiarAModoPublico()">🏠 Ver como público</button>
+        <button class="btn-share" onclick="abrirPanelAdmin()">⚙️ Panel Admin</button>
+        <button class="btn-share" onclick="abrirModalLinks()">🔗 Links emprendedores</button>
+        <button class="btn-logout" onclick="cerrarSesionAdmin()">🚪 Cerrar sesión</button>
+    `;
+}
+
+function mostrarBotonesPublico() {
+    const headerButtons = document.getElementById('headerButtons');
+    if (!headerButtons) return;
+    headerButtons.innerHTML = `
+        <button class="btn-admin" id="adminAccessBtn">🔐 Acceso Admin</button>
+    `;
+    
+    const adminAccessBtn = document.getElementById('adminAccessBtn');
+    if (adminAccessBtn) {
+        // Remover eventos anteriores para evitar duplicados
+        const newBtn = adminAccessBtn.cloneNode(true);
+        adminAccessBtn.parentNode.replaceChild(newBtn, adminAccessBtn);
+        newBtn.addEventListener('click', solicitarAccesoAdmin);
+    }
+}
+
+function solicitarAccesoAdmin() {
+    const password = prompt("Ingrese la contraseña de administrador:");
+    
+    if (password === ADMIN_PASSWORD) {
+        // Contraseña correcta - guardar sesión y redirigir a modo admin
+        sessionStorage.setItem(SESSION_KEY, "true");
+        window.location.href = window.location.origin + window.location.pathname + '?v=admin';
+    } else if (password !== null) {
+        // Contraseña incorrecta
+        alert("❌ Contraseña incorrecta. Acceso denegado.");
+    }
+}
+
+function cerrarSesionAdmin() {
+    sessionStorage.removeItem(SESSION_KEY);
+    window.location.href = window.location.origin + window.location.pathname;
+}
+
+function cambiarAModoPublico() {
+    window.location.href = window.location.origin + window.location.pathname;
+}
+
+function abrirPanelAdmin() {
+    const adminPanel = document.getElementById('adminPanel');
+    if (adminPanel) adminPanel.classList.remove('hidden');
+}
+
+function irInicio() {
+    if (modoVista === 'empresa') {
+        window.location.href = window.location.origin + window.location.pathname;
+    }
+}
+
+function volverALista() {
+    window.location.href = window.location.origin + window.location.pathname;
+}
+
+function abrirModalLinks() {
+    generarLinksCompartibles();
+    // Activar la pestaña de links en el panel admin
+    const tabs = document.querySelectorAll('.tab-btn');
+    const contents = document.querySelectorAll('.tab-content');
+    if (tabs.length && contents.length) {
+        tabs.forEach(btn => btn.classList.remove('active'));
+        contents.forEach(c => c.classList.remove('active'));
+        const linkTab = document.querySelector('.tab-btn[data-tab="links"]');
+        const linkContent = document.getElementById('tabLinks');
+        if (linkTab) linkTab.classList.add('active');
+        if (linkContent) linkContent.classList.add('active');
+    }
+    abrirPanelAdmin();
+}
+
+// === API Funciones ===
 
 async function cargarEmprendedores() {
     try {
         const response = await fetch("/api/emprendedores");
         if (!response.ok) throw new Error("Error cargando emprendedores");
         emprendedores = await response.json();
-        renderizarVitrinas();
+        
+        if (modoVista === 'empresa' && empresaIdView) {
+            const empresa = emprendedores.find(e => e.id === empresaIdView);
+            if (empresa) {
+                const empresaTitulo = document.getElementById('empresaTitulo');
+                const empresaNombre = document.getElementById('empresaNombre');
+                if (empresaTitulo) empresaTitulo.style.display = 'block';
+                if (empresaNombre) empresaNombre.innerHTML = `🌟 ${empresa.nombre}`;
+                renderizarEmpresaUnica(empresa);
+            } else {
+                const grid = document.getElementById('vitrinasGrid');
+                if (grid) grid.innerHTML = '<p style="text-align:center; padding:40px;">Emprendimiento no encontrado</p>';
+            }
+        } else {
+            renderizarVitrinas();
+        }
+        
         actualizarListaAdmin();
         actualizarEstadisticas();
         mostrarOportunidadesDestacadas();
+        if (modoVista === 'admin') {
+            generarLinksCompartibles();
+        }
     } catch (error) {
         console.error("Error:", error);
-        alert("Error cargando datos. Verifica que el servidor esté corriendo.");
+        const grid = document.getElementById('vitrinasGrid');
+        if (grid) grid.innerHTML = '<p style="text-align:center; padding:40px; color:red;">❌ Error cargando datos. Verifica que el servidor esté corriendo.</p>';
     }
 }
 
@@ -101,7 +276,7 @@ async function resetVisitasAPI() {
     return response.json();
 }
 
-
+// === Utilidades ===
 function getCategoriaEmoji(categoria) {
     const emojis = {
         moda: '👗', comida: '🍔', tecnologia: '💻',
@@ -119,7 +294,7 @@ function generarEstrellas(promedio) {
     return estrellas;
 }
 
-// === Render ===
+// === Renderisar Vitrinas ===
 function renderizarVitrinas() {
     const grid = document.getElementById('vitrinasGrid');
     if (!grid) return;
@@ -152,6 +327,11 @@ function renderizarVitrinas() {
                     <div class="stars">
                         ${[1,2,3,4,5].map(star => `<span class="star" data-value="${star}" onclick="calificar(${emp.id}, ${star})">★</span>`).join('')}
                     </div>
+                    ${emp.resenas && emp.resenas.length > 0 ? `
+                        <div class="comentario">
+                            💬 "${emp.resenas[emp.resenas.length-1].comentario || 'Sin comentario'}"
+                        </div>
+                    ` : ''}
                 </div>
                 <div class="mapa-container">
                     <div class="mapa-placeholder" onclick="abrirMapa('${emp.coordenadas || '4.7110,-74.0721'}', '${emp.nombre}')">📍 ${emp.ubicacion || 'Ubicación no especificada'}</div>
@@ -164,6 +344,44 @@ function renderizarVitrinas() {
             </div>
         </div>
     `).join('');
+}
+
+function renderizarEmpresaUnica(emp) {
+    const grid = document.getElementById('vitrinasGrid');
+    if (!grid) return;
+    grid.innerHTML = `
+        <div class="vitrina-card">
+            <img src="${emp.imagen || 'https://via.placeholder.com/400x300'}" class="vitrina-imagen" onerror="this.src='https://via.placeholder.com/400x300'">
+            <div class="vitrina-info">
+                <span class="vitrina-categoria">${getCategoriaEmoji(emp.categoria)} ${emp.categoria}</span>
+                <h3>${emp.nombre}</h3>
+                <p class="vitrina-descripcion">${emp.descripcion || ''}</p>
+                <p class="vitrina-precio">💰 ${emp.precio || ''}</p>
+                <div class="resenas">
+                    <div class="promedio">
+                        <div class="promedio-stars">${generarEstrellas(emp.promedio || 0)}</div>
+                        <span class="resenas-count">${emp.resenas?.length || 0} reseñas</span>
+                    </div>
+                    <div class="stars">
+                        ${[1,2,3,4,5].map(star => `<span class="star" data-value="${star}" onclick="calificar(${emp.id}, ${star})">★</span>`).join('')}
+                    </div>
+                    ${emp.resenas && emp.resenas.length > 0 ? `
+                        <div class="comentario">
+                            💬 "${emp.resenas[emp.resenas.length-1].comentario || 'Sin comentario'}"
+                        </div>
+                    ` : ''}
+                </div>
+                <div class="mapa-container">
+                    <div class="mapa-placeholder" onclick="abrirMapa('${emp.coordenadas || '4.7110,-74.0721'}', '${emp.nombre}')">📍 ${emp.ubicacion || 'Ubicación no especificada'}</div>
+                </div>
+                <div class="vitrina-botones">
+                    <a href="${emp.contacto}" target="_blank" class="vitrina-contacto">📞 Contactar</a>
+                    <button class="vitrina-web" onclick="iniciarChatConEmprendedor(${emp.id})">💬 Chat</button>
+                    ${emp.sitioWeb ? `<a href="${emp.sitioWeb}" target="_blank" class="vitrina-web">🌐 Web</a>` : ''}
+                </div>
+            </div>
+        </div>
+    `;
 }
 
 // === Reseñas ===
@@ -205,42 +423,117 @@ function iniciarChatConEmprendedor(id) {
     const chatWindow = document.getElementById('chatWindow');
     const chatMessages = document.getElementById('chatMessages');
     
-    chatMessages.innerHTML = `<div class="chat-message emprendedor">👋 ¡Hola! Soy ${emp.nombre}. ¿En qué puedo ayudarte?</div>`;
-    chatWindow.classList.add('open');
+    if (chatMessages) chatMessages.innerHTML = `<div class="chat-message emprendedor">👋 ¡Hola! Soy ${emp.nombre}. ¿En qué puedo ayudarte?</div>`;
+    if (chatWindow) chatWindow.classList.add('open');
 }
 
-document.getElementById('chatBtn')?.addEventListener('click', () => {
-    document.getElementById('chatWindow').classList.toggle('open');
-});
-
-document.getElementById('closeChatBtn')?.addEventListener('click', () => {
-    document.getElementById('chatWindow').classList.remove('open');
-});
-
-document.getElementById('sendChatBtn')?.addEventListener('click', () => {
-    const input = document.getElementById('chatInput');
-    const mensaje = input.value.trim();
-    if (!mensaje) return;
+function configurarChat() {
+    const chatBtn = document.getElementById('chatBtn');
+    const closeChatBtn = document.getElementById('closeChatBtn');
+    const sendChatBtn = document.getElementById('sendChatBtn');
+    const chatInput = document.getElementById('chatInput');
     
-    const chatMessages = document.getElementById('chatMessages');
-    chatMessages.innerHTML += `<div class="chat-message cliente">${mensaje}</div>`;
-    input.value = '';
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    if (chatBtn) {
+        chatBtn.addEventListener('click', () => {
+            const chatWindow = document.getElementById('chatWindow');
+            if (chatWindow) chatWindow.classList.toggle('open');
+        });
+    }
     
-    setTimeout(() => {
-        let respuesta = "Gracias por tu mensaje. Un asesor te contactará pronto.";
-        if (chatEmprendedorId) {
-            const emp = emprendedores.find(e => e.id === chatEmprendedorId);
-            respuesta = `📢 ${emp?.nombre || 'El emprendedor'} ha recibido tu mensaje. Te responderemos por WhatsApp en breve.`;
-        }
-        chatMessages.innerHTML += `<div class="chat-message emprendedor">${respuesta}</div>`;
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }, 1000);
-});
+    if (closeChatBtn) {
+        closeChatBtn.addEventListener('click', () => {
+            const chatWindow = document.getElementById('chatWindow');
+            if (chatWindow) chatWindow.classList.remove('open');
+        });
+    }
+    
+    if (sendChatBtn) {
+        sendChatBtn.addEventListener('click', () => {
+            const input = document.getElementById('chatInput');
+            const mensaje = input.value.trim();
+            if (!mensaje) return;
+            
+            const chatMessages = document.getElementById('chatMessages');
+            if (chatMessages) chatMessages.innerHTML += `<div class="chat-message cliente">${mensaje}</div>`;
+            if (input) input.value = '';
+            if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            setTimeout(() => {
+                let respuesta = "Gracias por tu mensaje. Un asesor te contactará pronto.";
+                if (chatEmprendedorId) {
+                    const emp = emprendedores.find(e => e.id === chatEmprendedorId);
+                    respuesta = `📢 ${emp?.nombre || 'El emprendedor'} ha recibido tu mensaje. Te responderemos por WhatsApp en breve.`;
+                }
+                if (chatMessages) chatMessages.innerHTML += `<div class="chat-message emprendedor">${respuesta}</div>`;
+                if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 1000);
+        });
+    }
+    
+    if (chatInput) {
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && sendChatBtn) sendChatBtn.click();
+        });
+    }
+}
 
-document.getElementById('chatInput')?.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') document.getElementById('sendChatBtn').click();
-});
+// === Link que se pueden compartir ===
+function generarLinksCompartibles() {
+    const container = document.getElementById('linksLista');
+    if (!container) return;
+    
+    const urlBase = window.location.origin + window.location.pathname;
+    
+    container.innerHTML = emprendedores.map(emp => `
+        <div class="admin-item">
+            <div>
+                <strong>${emp.nombre}</strong><br>
+                <small style="color: #666;">ID: ${emp.id}</small>
+            </div>
+            <div>
+                <input type="text" id="link_${emp.id}" value="${urlBase}?empresa=${emp.id}" style="width: 200px; font-size: 11px; padding: 5px;" readonly>
+                <button class="edit-btn" onclick="copiarAlPortapapeles('link_${emp.id}')">📋 Copiar</button>
+                <button class="btn-public" onclick="verVistaPrevia(${emp.id})">👁️ Ver</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function copiarAlPortapapeles(idInput) {
+    const input = document.getElementById(idInput);
+    if (input) {
+        input.select();
+        document.execCommand('copy');
+        alert('✅ Enlace copiado al portapapeles');
+    }
+}
+
+function verVistaPrevia(id) {
+    window.open(window.location.origin + window.location.pathname + `?empresa=${id}`, '_blank');
+}
+
+function abrirModalCompartir(id, nombre) {
+    const urlBase = window.location.origin + window.location.pathname;
+    const linkCompleto = `${urlBase}?empresa=${id}`;
+    const shareLink = document.getElementById('shareLink');
+    const modalShare = document.getElementById('modalShare');
+    if (shareLink) shareLink.value = linkCompleto;
+    if (modalShare) modalShare.classList.remove('hidden');
+}
+
+function copiarLink() {
+    const input = document.getElementById('shareLink');
+    if (input) {
+        input.select();
+        document.execCommand('copy');
+        alert('✅ Enlace copiado al portapapeles');
+    }
+}
+
+function cerrarModal() {
+    const modalShare = document.getElementById('modalShare');
+    if (modalShare) modalShare.classList.add('hidden');
+}
 
 // === Admin ===
 function actualizarListaAdmin() {
@@ -253,6 +546,7 @@ function actualizarListaAdmin() {
             <div>
                 <button class="edit-btn" onclick="editarEmprendedor(${emp.id})">✏️</button>
                 <button class="delete-btn" onclick="eliminarEmprendedor(${emp.id})">🗑️</button>
+                <button class="btn-share" onclick="abrirModalCompartir(${emp.id}, '${emp.nombre}')">🔗</button>
             </div>
         </div>
     `).join('');
@@ -267,6 +561,7 @@ function actualizarListaOportunidades() {
             <h4>${op.titulo}</h4>
             <p>${op.descripcion}</p>
             <small>📅 ${op.fechaCierre || 'Sin fecha'}</small><br>
+            <a href="${op.link}" target="_blank" style="color: var(--primary);">🔗 Ver más</a><br>
             <button class="delete-btn" onclick="eliminarOportunidad(${op.id})" style="margin-top:10px;">Eliminar</button>
         </div>
     `).join('');
@@ -296,7 +591,7 @@ function mostrarOportunidadesDestacadas() {
     `).join('');
 }
 
-// Crud Emprendedores
+// CRUD Emprendedores
 async function agregarEmprendedor(e) {
     e.preventDefault();
     
@@ -353,7 +648,7 @@ window.editarEmprendedor = async (id) => {
     }
 };
 
-// Crud Oportunidades
+// CRUD Oportunidades
 async function agregarOportunidad(e) {
     e.preventDefault();
     
@@ -369,9 +664,9 @@ async function agregarOportunidad(e) {
         await agregarOportunidadAPI(nuevaOportunidad);
         await cargarOportunidades();
         document.getElementById('oportunidadForm').reset();
-        alert('Oportunidad agregada a la base de datos');
+        alert('✅ Oportunidad agregada a la base de datos');
     } catch (error) {
-        alert('Error al guardar');
+        alert('❌ Error al guardar');
     }
 }
 
@@ -380,66 +675,97 @@ window.eliminarOportunidad = async (id) => {
         try {
             await eliminarOportunidadAPI(id);
             await cargarOportunidades();
-            alert('Oportunidad eliminada');
+            alert('✅ Oportunidad eliminada');
         } catch (error) {
-            alert('Error al eliminar');
+            alert('❌ Error al eliminar');
         }
     }
 };
 
 // === Inicialización ===
 document.addEventListener('DOMContentLoaded', async () => {
+    // PRIMERO: Verificar autenticación y establecer modo
+    const continuar = verificarYEstablecerModo();
+    if (!continuar) return;
+    
+    // Configurar la interfaz según el modo
+    detectarModoVista();
+    
+    // Configurar el chat
+    configurarChat();
+    
+    // Cargar datos
     await cargarEmprendedores();
     await cargarOportunidades();
     await cargarVisitas();
     await registrarVisita();
     
-    // Filtros
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            filtroActual = btn.dataset.filter;
-            renderizarVitrinas();
+    // Filtros (solo se puede ver en modo público)
+    if (modoVista === 'public') {
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                filtroActual = btn.dataset.filter;
+                renderizarVitrinas();
+            });
         });
-    });
+    }
     
     // Búsqueda
-    document.getElementById('searchInput')?.addEventListener('input', (e) => {
-        busquedaActual = e.target.value.toLowerCase();
-        renderizarVitrinas();
-    });
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            busquedaActual = e.target.value.toLowerCase();
+            renderizarVitrinas();
+        });
+    }
     
-    // Admin panel
-    const adminBtn = document.getElementById('adminLoginBtn');
+    // Panel admin
     const adminPanel = document.getElementById('adminPanel');
     const closeAdminBtn = document.getElementById('closeAdminBtn');
     
-    adminBtn?.addEventListener('click', () => adminPanel.classList.remove('hidden'));
-    closeAdminBtn?.addEventListener('click', () => adminPanel.classList.add('hidden'));
-    adminPanel?.addEventListener('click', (e) => {
-        if (e.target === adminPanel) adminPanel.classList.add('hidden');
-    });
+    if (closeAdminBtn) {
+        closeAdminBtn.addEventListener('click', () => {
+            if (adminPanel) adminPanel.classList.add('hidden');
+        });
+    }
     
-    // Tabs
-    document.querySelectorAll('.tab-btn').forEach(btn => {
+    if (adminPanel) {
+        adminPanel.addEventListener('click', (e) => {
+            if (e.target === adminPanel) adminPanel.classList.add('hidden');
+        });
+    }
+    
+    // Tabs del admin
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             const tab = btn.dataset.tab;
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            tabBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.add('active');
+            tabContents.forEach(c => c.classList.remove('active'));
+            const activeTab = document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
+            if (activeTab) activeTab.classList.add('active');
         });
     });
     
     // Formularios
-    document.getElementById('emprendedorForm')?.addEventListener('submit', agregarEmprendedor);
-    document.getElementById('oportunidadForm')?.addEventListener('submit', agregarOportunidad);
-    document.getElementById('resetVisitasBtn')?.addEventListener('click', async () => {
-        if (confirm('¿Reiniciar contador de visitas?')) {
-            await resetVisitasAPI();
-            await cargarVisitas();
-            alert('✅ Visitas reiniciadas');
-        }
-    });
+    const emprendedorForm = document.getElementById('emprendedorForm');
+    const oportunidadForm = document.getElementById('oportunidadForm');
+    const resetVisitasBtn = document.getElementById('resetVisitasBtn');
+    
+    if (emprendedorForm) emprendedorForm.addEventListener('submit', agregarEmprendedor);
+    if (oportunidadForm) oportunidadForm.addEventListener('submit', agregarOportunidad);
+    if (resetVisitasBtn) {
+        resetVisitasBtn.addEventListener('click', async () => {
+            if (confirm('¿Reiniciar contador de visitas?')) {
+                await resetVisitasAPI();
+                await cargarVisitas();
+                alert('✅ Visitas reiniciadas');
+            }
+        });
+    }
 });

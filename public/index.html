@@ -8,10 +8,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <!-- HEADER -->
+    <!-- Header -->
     <header class="header">
         <div class="container">
-            <div class="logo">
+            <div class="logo" onclick="irInicio()">
                 <div class="logo-icon">🚀</div>
                 <div>
                     <h1>Vitrina UCC</h1>
@@ -22,22 +22,20 @@
                 <input type="text" id="searchInput" placeholder="Buscar emprendimiento o producto...">
                 <button>🔍 Buscar</button>
             </div>
-            <div class="admin-btn">
-                <button id="adminLoginBtn" class="btn-admin">👤 Admin</button>
-            </div>
+            <div class="header-buttons" id="headerButtons"></div>
         </div>
     </header>
 
     <!-- OPORTUNIDADES DESTACADAS -->
-    <section class="oportunidades-destacadas" id="oportunidadesDestacadas" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px 0;">
+    <section class="oportunidades-destacadas" id="oportunidadesDestacadas">
         <div class="container">
-            <h2 style="color: white; margin-bottom: 20px; text-align: center;">🎯 Oportunidades UCC</h2>
-            <div id="destacadosContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;"></div>
+            <h2>🎯 Oportunidades UCC</h2>
+            <div id="destacadosContainer"></div>
         </div>
     </section>
 
-    <!-- FILTROS CON NUEVAS CATEGORÍAS -->
-    <section class="filters">
+    <!-- Filtros -->
+    <section class="filters" id="filtersSection">
         <div class="container">
             <div class="filter-buttons">
                 <button class="filter-btn active" data-filter="all">Todos</button>
@@ -53,25 +51,30 @@
         </div>
     </section>
 
-    <!-- GRID DE VITRINAS -->
+    <!-- Vitrinas -->
     <main class="main-content">
         <div class="container">
+            <div id="empresaTitulo" style="display: none;">
+                <h2 id="empresaNombre"></h2>
+                <button class="btn-public" onclick="volverALista()">← Volver a todos los emprendimientos</button>
+            </div>
             <div class="vitrinas-grid" id="vitrinasGrid"></div>
         </div>
     </main>
 
-    <!-- FOOTER -->
+
     <footer class="footer">
         <div class="container">
-            <p>© 2025 Universidad Cooperativa de Colombia - Vitrina Digital para Emprendimientos Locales</p>
+            <p>© 2026 Universidad Cooperativa de Colombia - Vitrina Digital para Emprendimientos Locales</p>
             <p>🌍 Conectamos emprendedores con oportunidades y clientes | 💬 Soporte 24/7</p>
         </div>
     </footer>
 
-    <!-- BOTÓN DE CHAT -->
-    <button class="chat-btn" id="chatBtn">
-        💬
-    </button>
+    <!-- vista actual -->
+    <div class="view-badge" id="viewBadge"></div>
+
+    <!-- Boton de chat -->
+    <button class="chat-btn" id="chatBtn">💬</button>
 
     <!-- VENTANA DE CHAT -->
     <div class="chat-window" id="chatWindow">
@@ -88,7 +91,7 @@
         </div>
     </div>
 
-    <!-- PANEL ADMIN -->
+    <!-- Admin (solo se puede ver en modo admin) -->
     <div id="adminPanel" class="admin-panel hidden">
         <div class="admin-content">
             <h2>🎛️ Panel de Administración - Vitrina UCC</h2>
@@ -98,6 +101,7 @@
                 <button class="tab-btn active" data-tab="emprendedores">📋 Emprendedores</button>
                 <button class="tab-btn" data-tab="oportunidades">🎯 Oportunidades</button>
                 <button class="tab-btn" data-tab="estadisticas">📊 Estadísticas</button>
+                <button class="tab-btn" data-tab="links">🔗 Links Compartibles</button>
             </div>
             
             <div id="tabEmprendedores" class="tab-content active">
@@ -116,11 +120,11 @@
                         <option value="turismo">✈️ Turismo</option>
                     </select>
                     <textarea id="descripcion" placeholder="Descripción" rows="3" required></textarea>
-                    <input type="text" id="precio" placeholder="Precio">
+                    <input type="text" id="precio" placeholder="Precio (ej: $50.000 - $200.000)">
                     <input type="url" id="imagen" placeholder="URL imagen">
                     <input type="text" id="ubicacion" placeholder="Ubicación (ej: Cra 45 #22-10, Bogotá)">
                     <input type="text" id="coordenadas" placeholder="Coordenadas (ej: 4.7110,-74.0721)">
-                    <input type="text" id="contacto" placeholder="WhatsApp" required>
+                    <input type="text" id="contacto" placeholder="WhatsApp (ej: https://wa.me/573001234567)" required>
                     <input type="url" id="sitioWeb" placeholder="Sitio web">
                     <button type="submit">💾 Guardar</button>
                 </form>
@@ -161,8 +165,25 @@
                         <div class="stat-label">Oportunidades</div>
                     </div>
                 </div>
-                <button id="resetVisitasBtn" class="btn-secondary">🔄 Reiniciar Visitas</button>
+                <button id="resetVisitasBtn">🔄 Reiniciar Visitas</button>
             </div>
+            
+            <div id="tabLinks" class="tab-content">
+                <h3>🔗 Links Compartibles para Emprendedores</h3>
+                <p>Cada emprendedor tiene un enlace único para compartir su negocio:</p>
+                <div id="linksLista"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- compartir -->
+    <div id="modalShare" class="modal-share hidden">
+        <div class="modal-content">
+            <h3>🔗 Compartir este emprendimiento</h3>
+            <p>Comparte este enlace para que otros vean SOLO este negocio:</p>
+            <input type="text" id="shareLink" readonly>
+            <button class="copy-btn" onclick="copiarLink()">📋 Copiar enlace</button>
+            <button class="btn-public" onclick="cerrarModal()" style="margin-top: 10px;">Cerrar</button>
         </div>
     </div>
 
