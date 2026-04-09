@@ -80,6 +80,8 @@ body {
     gap: 8px;
     flex: 1;
     max-width: 450px;
+    width: 100%;
+    flex-wrap: wrap;
 }
 
 .search-box input {
@@ -741,23 +743,38 @@ body {
     .header .container {
         flex-direction: column;
     }
-    
+
+    .search-box {
+        flex-direction: column;
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .search-box input,
+    .search-box button {
+        width: 100%;
+    }
+
+    .search-box button {
+        text-align: center;
+    }
+
     .vitrinas-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .chat-window {
         width: 90%;
         right: 5%;
         bottom: 80px;
     }
-    
+
     .filter-buttons {
         justify-content: flex-start;
         overflow-x: auto;
         padding-bottom: 10px;
     }
-    
+
     .header-buttons {
         justify-content: center;
     }
