@@ -37,7 +37,7 @@ body {
     padding: 0 24px;
 }
 
-
+/* === HEADER FIJO === */
 .header {
     background: linear-gradient(135deg, var(--dark), #0F172A);
     color: white;
@@ -127,7 +127,7 @@ body {
     transform: scale(1.02);
 }
 
-
+/* === BOTONES DEL HEADER === */
 .btn-admin, .btn-public, .btn-share {
     background: rgba(255,255,255,0.1);
     color: white;
@@ -178,7 +178,7 @@ body {
     align-items: center;
 }
 
-
+/* === OPORTUNIDADES DESTACADAS === */
 .oportunidades-destacadas {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     padding: 30px 0;
@@ -196,7 +196,7 @@ body {
     gap: 20px;
 }
 
-
+/* === FILTROS === */
 .filters {
     background: white;
     padding: 20px 0;
@@ -237,7 +237,7 @@ body {
     box-shadow: 0 4px 12px rgba(139,92,246,0.3);
 }
 
-
+/* === GRID DE VITRINAS === */
 .vitrinas-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -245,7 +245,7 @@ body {
     margin: 50px 0;
 }
 
-
+/* Tarjeta con imagen fija */
 .vitrina-card {
     background: white;
     border-radius: 20px;
@@ -265,7 +265,7 @@ body {
     box-shadow: 0 20px 30px rgba(0,0,0,0.1);
 }
 
-
+/* Contenedor de la imagen - STICKY (no baja) */
 .vitrina-imagen-container {
     position: sticky;
     top: 0;
@@ -281,7 +281,7 @@ body {
     display: block;
 }
 
-
+/* Contenido con scroll independiente */
 .vitrina-info {
     padding: 20px;
     overflow-y: auto;

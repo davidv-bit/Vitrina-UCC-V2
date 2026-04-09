@@ -313,9 +313,7 @@ function renderizarVitrinas() {
 
     grid.innerHTML = filtrados.map(emp => `
         <div class="vitrina-card" data-id="${emp.id}">
-            <div class="vitrina-imagen-container">
-                <img src="${emp.imagen || 'https://via.placeholder.com/400x300'}" class="vitrina-imagen" onerror="this.src='https://via.placeholder.com/400x300'">
-            </div>
+            <img src="${emp.imagen || 'https://via.placeholder.com/400x300'}" class="vitrina-imagen" onerror="this.src='https://via.placeholder.com/400x300'">
             <div class="vitrina-info">
                 <span class="vitrina-categoria">${getCategoriaEmoji(emp.categoria)} ${emp.categoria}</span>
                 <h3>${emp.nombre}</h3>
@@ -351,12 +349,9 @@ function renderizarVitrinas() {
 function renderizarEmpresaUnica(emp) {
     const grid = document.getElementById('vitrinasGrid');
     if (!grid) return;
-    
     grid.innerHTML = `
         <div class="vitrina-card">
-            <div class="vitrina-imagen-container">
-                <img src="${emp.imagen || 'https://via.placeholder.com/400x300'}" class="vitrina-imagen" onerror="this.src='https://via.placeholder.com/400x300'">
-            </div>
+            <img src="${emp.imagen || 'https://via.placeholder.com/400x300'}" class="vitrina-imagen" onerror="this.src='https://via.placeholder.com/400x300'">
             <div class="vitrina-info">
                 <span class="vitrina-categoria">${getCategoriaEmoji(emp.categoria)} ${emp.categoria}</span>
                 <h3>${emp.nombre}</h3>
