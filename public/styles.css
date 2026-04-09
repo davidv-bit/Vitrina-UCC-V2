@@ -11,11 +11,12 @@ html {
 }
 
 body {
-        overflow-x: hidden;
     font-family: 'Inter', sans-serif;
     background: #f8fafc;
     color: #1e293b;
-    padding-top: 260px;
+    margin: 0;
+    padding-top: 0;
+    overflow-x: hidden;
 }
 
 :root {
@@ -36,14 +37,14 @@ body {
     padding: 0 24px;
 }
 
-/* === Header === */
+
 .header {
     background: linear-gradient(135deg, var(--dark), #0F172A);
     color: white;
-    padding: 16px 0;
-    position: fixed !important;
-    top: 0 !important;
+    position: fixed;
+    top: 0;
     left: 0;
+    right: 0;
     width: 100%;
     z-index: 9999;
 }
@@ -54,7 +55,12 @@ body {
     align-items: center;
     flex-wrap: wrap;
     gap: 20px;
-    width: 100%;
+    padding: 16px 24px;
+}
+
+
+.header-spacer {
+    height: 130px;
 }
 
 .logo {
@@ -88,8 +94,6 @@ body {
     gap: 8px;
     flex: 1;
     max-width: 450px;
-    width: 100%;
-    flex-wrap: wrap;
 }
 
 .search-box input {
@@ -123,7 +127,7 @@ body {
     transform: scale(1.02);
 }
 
-/* === Botones del Header === */
+
 .btn-admin, .btn-public, .btn-share {
     background: rgba(255,255,255,0.1);
     color: white;
@@ -174,7 +178,7 @@ body {
     align-items: center;
 }
 
-/* === Oportunidades Destacadas === */
+
 .oportunidades-destacadas {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     padding: 30px 0;
@@ -192,13 +196,13 @@ body {
     gap: 20px;
 }
 
-/* ========== FILTROS ========== */
+
 .filters {
     background: white;
     padding: 20px 0;
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     position: sticky;
-    top: 80px;
+    top: 0;
     z-index: 99;
 }
 
@@ -233,13 +237,14 @@ body {
     box-shadow: 0 4px 12px rgba(139,92,246,0.3);
 }
 
-/* === Grid de Vitrinas === */
+
 .vitrinas-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 30px;
     margin: 50px 0;
 }
+
 
 .vitrina-card {
     background: white;
@@ -249,6 +254,10 @@ body {
     transition: all 0.3s;
     cursor: pointer;
     position: relative;
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    max-height: 600px;
 }
 
 .vitrina-card:hover {
@@ -256,14 +265,43 @@ body {
     box-shadow: 0 20px 30px rgba(0,0,0,0.1);
 }
 
+
+.vitrina-imagen-container {
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 10;
+    width: 100%;
+}
+
 .vitrina-imagen {
     width: 100%;
     height: 220px;
     object-fit: cover;
+    display: block;
 }
+
 
 .vitrina-info {
     padding: 20px;
+    overflow-y: auto;
+    max-height: 380px;
+    scrollbar-width: thin;
+}
+
+/* Personalizar scrollbar */
+.vitrina-info::-webkit-scrollbar {
+    width: 5px;
+}
+
+.vitrina-info::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.vitrina-info::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 10px;
 }
 
 .vitrina-categoria {
@@ -322,7 +360,7 @@ body {
     transform: scale(1.02);
 }
 
-/* === Sistema DE Reseñas === */
+/* === SISTEMA DE RESEÑAS === */
 .resenas {
     margin-top: 15px;
     padding-top: 12px;
@@ -376,7 +414,7 @@ body {
     border-radius: 8px;
 }
 
-/* === Mapa === */
+/* === MAPA === */
 .mapa-container {
     margin-top: 15px;
     border-radius: 12px;
@@ -398,7 +436,7 @@ body {
     transform: scale(1.02);
 }
 
-/* === Chat === */
+/* === CHAT === */
 .chat-btn {
     position: fixed;
     bottom: 30px;
@@ -511,7 +549,7 @@ body {
     cursor: pointer;
 }
 
-/* === Footer === */
+/* === FOOTER === */
 .footer {
     background: var(--dark);
     color: white;
@@ -525,7 +563,7 @@ body {
     opacity: 0.8;
 }
 
-/* === Panel Admin === */
+/* === PANEL ADMIN === */
 .admin-panel {
     position: fixed;
     top: 0;
@@ -687,7 +725,7 @@ body {
     cursor: pointer;
 }
 
-/* === Modal Compartir === */
+/* === MODAL COMPARTIR === */
 .modal-share {
     position: fixed;
     top: 0;
@@ -732,7 +770,7 @@ body {
     cursor: pointer;
 }
 
-/* === Badge de Vista === */
+/* === BADGE DE VISTA === */
 .view-badge {
     position: fixed;
     bottom: 20px;
@@ -746,13 +784,16 @@ body {
     box-shadow: 0 2px 10px rgba(0,0,0,0.2);
 }
 
-/* === Responsive === */
+/* === RESPONSIVE === */
 @media (max-width: 768px) {
-    body {
-        padding-top: 300px;
+    .header-spacer {
+        height: 220px;
     }
+
     .header .container {
         flex-direction: column;
+        align-items: center;
+        flex-wrap: wrap;
     }
 
     .search-box {
@@ -772,6 +813,14 @@ body {
 
     .vitrinas-grid {
         grid-template-columns: 1fr;
+    }
+
+    .vitrina-card {
+        max-height: 550px;
+    }
+
+    .vitrina-info {
+        max-height: 330px;
     }
 
     .chat-window {
