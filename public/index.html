@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Vitrina Digital UCC - Emprendimientos Locales</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- HEADER -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <div class="logo-icon">🚀</div>
+                <div>
+                    <h1>Vitrina UCC</h1>
+                    <p>Emprendimientos Locales</p>
+                </div>
+            </div>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Buscar emprendimiento o producto...">
+                <button>🔍 Buscar</button>
+            </div>
+            <div class="admin-btn">
+                <button id="adminLoginBtn" class="btn-admin">👤 Admin</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- OPORTUNIDADES DESTACADAS -->
+    <section class="oportunidades-destacadas" id="oportunidadesDestacadas" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px 0;">
+        <div class="container">
+            <h2 style="color: white; margin-bottom: 20px; text-align: center;">🎯 Oportunidades UCC</h2>
+            <div id="destacadosContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;"></div>
+        </div>
+    </section>
+
+    <!-- FILTROS CON NUEVAS CATEGORÍAS -->
+    <section class="filters">
+        <div class="container">
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="all">Todos</button>
+                <button class="filter-btn" data-filter="moda">👗 Moda</button>
+                <button class="filter-btn" data-filter="comida">🍔 Comida</button>
+                <button class="filter-btn" data-filter="tecnologia">💻 Tecnología</button>
+                <button class="filter-btn" data-filter="arte">🎨 Arte</button>
+                <button class="filter-btn" data-filter="servicios">📋 Servicios</button>
+                <button class="filter-btn" data-filter="salud">🏥 Salud</button>
+                <button class="filter-btn" data-filter="educacion">📚 Educación</button>
+                <button class="filter-btn" data-filter="turismo">✈️ Turismo</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- GRID DE VITRINAS -->
+    <main class="main-content">
+        <div class="container">
+            <div class="vitrinas-grid" id="vitrinasGrid"></div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <p>© 2025 Universidad Cooperativa de Colombia - Vitrina Digital para Emprendimientos Locales</p>
+            <p>🌍 Conectamos emprendedores con oportunidades y clientes | 💬 Soporte 24/7</p>
+        </div>
+    </footer>
+
+    <!-- BOTÓN DE CHAT -->
+    <button class="chat-btn" id="chatBtn">
+        💬
+    </button>
+
+    <!-- VENTANA DE CHAT -->
+    <div class="chat-window" id="chatWindow">
+        <div class="chat-header">
+            <span>💬 Chat con Soporte UCC</span>
+            <button id="closeChatBtn">✕</button>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="chat-message emprendedor">👋 ¡Hola! ¿En qué podemos ayudarte hoy?</div>
+        </div>
+        <div class="chat-input-container">
+            <input type="text" id="chatInput" placeholder="Escribe tu mensaje...">
+            <button id="sendChatBtn">Enviar</button>
+        </div>
+    </div>
+
+    <!-- PANEL ADMIN -->
+    <div id="adminPanel" class="admin-panel hidden">
+        <div class="admin-content">
+            <h2>🎛️ Panel de Administración - Vitrina UCC</h2>
+            <button id="closeAdminBtn" class="close-btn">✕</button>
+            
+            <div class="admin-tabs">
+                <button class="tab-btn active" data-tab="emprendedores">📋 Emprendedores</button>
+                <button class="tab-btn" data-tab="oportunidades">🎯 Oportunidades</button>
+                <button class="tab-btn" data-tab="estadisticas">📊 Estadísticas</button>
+            </div>
+            
+            <div id="tabEmprendedores" class="tab-content active">
+                <form id="emprendedorForm">
+                    <h3>➕ Agregar Emprendimiento</h3>
+                    <input type="text" id="nombre" placeholder="Nombre" required>
+                    <select id="categoria" required>
+                        <option value="">Seleccionar</option>
+                        <option value="moda">👗 Moda</option>
+                        <option value="comida">🍔 Comida</option>
+                        <option value="tecnologia">💻 Tecnología</option>
+                        <option value="arte">🎨 Arte</option>
+                        <option value="servicios">📋 Servicios</option>
+                        <option value="salud">🏥 Salud</option>
+                        <option value="educacion">📚 Educación</option>
+                        <option value="turismo">✈️ Turismo</option>
+                    </select>
+                    <textarea id="descripcion" placeholder="Descripción" rows="3" required></textarea>
+                    <input type="text" id="precio" placeholder="Precio">
+                    <input type="url" id="imagen" placeholder="URL imagen">
+                    <input type="text" id="ubicacion" placeholder="Ubicación (ej: Cra 45 #22-10, Bogotá)">
+                    <input type="text" id="coordenadas" placeholder="Coordenadas (ej: 4.7110,-74.0721)">
+                    <input type="text" id="contacto" placeholder="WhatsApp" required>
+                    <input type="url" id="sitioWeb" placeholder="Sitio web">
+                    <button type="submit">💾 Guardar</button>
+                </form>
+                <div id="listaEmprendedores"></div>
+            </div>
+            
+            <div id="tabOportunidades" class="tab-content">
+                <form id="oportunidadForm">
+                    <h3>➕ Agregar Oportunidad</h3>
+                    <input type="text" id="tituloOportunidad" placeholder="Título" required>
+                    <select id="tipoOportunidad" required>
+                        <option value="convocatoria">📢 Convocatoria</option>
+                        <option value="feria">🎪 Feria</option>
+                        <option value="financiacion">💰 Financiación</option>
+                        <option value="capacitacion">📚 Capacitación</option>
+                    </select>
+                    <textarea id="descripcionOportunidad" placeholder="Descripción" rows="3" required></textarea>
+                    <input type="date" id="fechaCierre">
+                    <input type="url" id="linkOportunidad" placeholder="Link">
+                    <button type="submit">➕ Agregar</button>
+                </form>
+                <div id="listaOportunidades"></div>
+            </div>
+            
+            <div id="tabEstadisticas" class="tab-content">
+                <h3>📊 Estadísticas</h3>
+                <div class="stats-cards">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalEmprendedores">0</div>
+                        <div class="stat-label">Emprendedores</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalVisitas">0</div>
+                        <div class="stat-label">Visitas</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalOportunidades">0</div>
+                        <div class="stat-label">Oportunidades</div>
+                    </div>
+                </div>
+                <button id="resetVisitasBtn" class="btn-secondary">🔄 Reiniciar Visitas</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
