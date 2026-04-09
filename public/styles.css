@@ -10,7 +10,7 @@ body {
     font-family: 'Inter', sans-serif;
     background: #f8fafc;
     color: #1e293b;
-    padding-top: 140px;
+    padding-top: 260px;
 }
 
 :root {
@@ -40,7 +40,7 @@ body {
     top: 0;
     left: 0;
     width: 100%;
-    z-index: 100;
+    z-index: 9999;
     box-shadow: 0 4px 20px rgba(0,0,0,0.1);
 }
 
@@ -743,6 +743,9 @@ body {
 
 /* === Responsive === */
 @media (max-width: 768px) {
+    body {
+        padding-top: 320px;
+    }
     .header .container {
         flex-direction: column;
     }
